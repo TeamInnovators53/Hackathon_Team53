@@ -1,6 +1,17 @@
 /**
  * KeyBank Key Privilege Multi-Agent System - Client Application
  * Hackathon Team 53 - Team Innovators.
+ *
+ * Includes:
+ * 1. Interactive Hands-Free Inbound Voice Call with Identity Verification:
+ *    - First Name & Last Name
+ *    - 10-Digit Phone Number
+ *    - SSN Last 4 Validation
+ * 2. Persistent Language Preference Management:
+ *    - New Caller: Prompts for English or Spanish, saves preference permanently.
+ *    - Returning Caller: Welcomes back, checks stored preference ("We have English/Spanish as your preferred language. Is this your preferred language, or choose another?").
+ * 3. Google TTS (Text-to-Speech) Audio Engine with Animated Waveform Sync & Hands-Free Chaining.
+ * 4. Dual-Tone Multi-Frequency (DTMF) Web Audio Touch-Tone Dialpad.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -10,6 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let recognition = null;
     let isRecording = false;
     let audioCtx = null;
+    let isVoiceCallActive = false;
+    let activeAudio = null;
 
     // DOM Elements
     const customerSelect = document.getElementById("customerSelect");
@@ -26,6 +39,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const proactiveAlertContent = document.getElementById("proactiveAlertContent");
     const voiceWaveform = document.getElementById("voiceWaveform");
     const voiceStatusLabel = document.getElementById("voiceStatusLabel");
+
+    // Voice Call DOM
+    const voiceCallBtn = document.getElementById("voiceCallBtn");
+    const resetPrefBtn = document.getElementById("resetPrefBtn");
+    const endCallBtn = document.getElementById("endCallBtn");
+    const voiceCallBanner = document.getElementById("voiceCallBanner");
+    const callStateBadge = document.getElementById("callStateBadge");
+    const callBannerText = document.getElementById("callBannerText");
 
     // Profile DOM
     const profName = document.getElementById("profName");
@@ -65,7 +86,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const dtmfPanel = document.getElementById("dtmfPanel");
     const dtmfDisplay = document.getElementById("dtmfDisplay");
 
-    // Initialize Web Audio for DTMF Dual-Tone Frequencies
+    // =========================================================================
+    // 1. Web Audio DTMF Dual-Tone Generator
+    // =========================================================================
     function playDtmfTone(key) {
         try {
             if (!audioCtx) {
@@ -110,7 +133,109 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Initialize Speech Recognition (STT)
+    // =========================================================================
+    // 2. Google TTS (Text-to-Speech) Audio Engine
+    // =========================================================================
+    function playGoogleTTS(text, lang = "ENG", onEndCallback = null) {
+        if (!isTtsEnabled || !text) {
+            if (onEndCallback) onEndCallback();
+            return;
+        }
+
+        // Clean text of markdown, badges, and technical tags
+        const cleanSpeech = text
+            .replace(/[*#`_>]/g, "")
+            .replace(/\[K2U_.*?\.au\]/gi, "")
+            .replace(/\[.*?\]/g, "")
+            .replace(/\$\d+(\.\d+)?/g, (m) => m.replace("$", "") + " dollars")
+            .replace(/\n+/g, " ")
+            .trim();
+
+        if (!cleanSpeech) {
+            if (onEndCallback) onEndCallback();
+            return;
+        }
+
+        const langCode = (lang === "SPA" || cleanSpeech.toLowerCase().includes("español") || cleanSpeech.toLowerCase().includes("bienvenid")) ? "es" : "en";
+
+        // Activate voice visualizer
+        if (voiceWaveform) {
+            voiceWaveform.classList.remove("idle", "recording");
+            voiceWaveform.classList.add("speaking");
+        }
+        if (voiceStatusLabel) {
+            voiceStatusLabel.textContent = `Google TTS: Speaking (${langCode === "es" ? "Español" : "English"})...`;
+        }
+
+        const cleanup = () => {
+            if (voiceWaveform) {
+                voiceWaveform.classList.remove("speaking");
+                voiceWaveform.classList.add("idle");
+            }
+            if (voiceStatusLabel) {
+                voiceStatusLabel.textContent = isVoiceCallActive ? "Voice Call Active • Listening..." : "Voice Concierge Active";
+            }
+            if (onEndCallback) onEndCallback();
+        };
+
+        // Attempt 1: Direct Google Translate Neural Audio Stream
+        try {
+            if (activeAudio) {
+                activeAudio.pause();
+                activeAudio = null;
+            }
+            const encoded = encodeURIComponent(cleanSpeech.slice(0, 200));
+            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${langCode}&client=tw-ob&q=${encoded}`;
+            const audio = new Audio(ttsUrl);
+            activeAudio = audio;
+
+            audio.onended = () => cleanup();
+            audio.onerror = () => {
+                // Fallback to browser Google Neural voice
+                playBrowserGoogleVoice(cleanSpeech, langCode, cleanup);
+            };
+
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    playBrowserGoogleVoice(cleanSpeech, langCode, cleanup);
+                });
+            }
+        } catch (e) {
+            playBrowserGoogleVoice(cleanSpeech, langCode, cleanup);
+        }
+    }
+
+    function playBrowserGoogleVoice(text, langCode, onEnd) {
+        if (!window.speechSynthesis) {
+            if (onEnd) onEnd();
+            return;
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.02;
+        utterance.lang = langCode === "es" ? "es-US" : "en-US";
+
+        // Try selecting Google Neural Voice
+        const voices = window.speechSynthesis.getVoices();
+        const googleVoice = voices.find(v => v.name.includes("Google") && (v.lang.startsWith(langCode) || v.lang.includes(langCode)));
+        if (googleVoice) {
+            utterance.voice = googleVoice;
+        }
+
+        utterance.onend = () => {
+            if (onEnd) onEnd();
+        };
+        utterance.onerror = () => {
+            if (onEnd) onEnd();
+        };
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // =========================================================================
+    // 3. Speech Recognition (STT) Setup
+    // =========================================================================
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
@@ -140,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 voiceWaveform.classList.remove("recording");
                 voiceWaveform.classList.add("idle");
             }
-            if (voiceStatusLabel) voiceStatusLabel.textContent = "Voice Concierge Active";
+            if (voiceStatusLabel) voiceStatusLabel.textContent = isVoiceCallActive ? "Voice Call Active" : "Voice Concierge Active";
         };
 
         recognition.onend = () => {
@@ -150,61 +275,150 @@ document.addEventListener("DOMContentLoaded", () => {
                 voiceWaveform.classList.remove("recording");
                 voiceWaveform.classList.add("idle");
             }
-            if (voiceStatusLabel) voiceStatusLabel.textContent = "Voice Concierge Active";
+            if (voiceStatusLabel) voiceStatusLabel.textContent = isVoiceCallActive ? "Voice Call Active" : "Voice Concierge Active";
         };
     } else {
         micBtn.style.display = "none";
     }
 
-    // Text to Speech
-    function speakText(text) {
-        if (!isTtsEnabled || !window.speechSynthesis) return;
-        window.speechSynthesis.cancel();
-        const cleanText = text ? text.replace(/[#*`_>]/g, "").trim() : "";
-        const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.rate = 1.05;
-
-        utterance.onstart = () => {
-            if (voiceWaveform) {
-                voiceWaveform.classList.remove("idle", "recording");
-                voiceWaveform.classList.add("speaking");
-            }
-            if (voiceStatusLabel) voiceStatusLabel.textContent = "Voice Concierge Speaking...";
-        };
-
-        utterance.onend = () => {
-            if (voiceWaveform) {
-                voiceWaveform.classList.remove("speaking");
-                voiceWaveform.classList.add("idle");
-            }
-            if (voiceStatusLabel) voiceStatusLabel.textContent = "Voice Concierge Active";
-        };
-
-        utterance.onerror = () => {
-            if (voiceWaveform) {
-                voiceWaveform.classList.remove("speaking");
-                voiceWaveform.classList.add("idle");
-            }
-            if (voiceStatusLabel) voiceStatusLabel.textContent = "Voice Concierge Active";
-        };
-
-        window.speechSynthesis.speak(utterance);
+    function listenForSpeech() {
+        if (!recognition || isRecording) return;
+        try {
+            recognition.start();
+        } catch (e) {
+            console.warn("Recognition start ignored:", e);
+        }
     }
 
-    // Format Markdown to HTML
+    // =========================================================================
+    // 4. Inbound Voice Call Flow (Interactive Verification & Preference Logic)
+    // =========================================================================
+    async function startVoiceCall() {
+        isVoiceCallActive = true;
+        voiceCallBtn.className = "call-action-btn active-call";
+        voiceCallBtn.innerHTML = '<i class="fa-solid fa-phone-slash"></i> <span>End Voice Call</span>';
+        voiceCallBanner.classList.remove("hidden");
+        callStateBadge.textContent = "STEP 1: CALLER IDENTIFICATION";
+        callBannerText.textContent = "Inbound Voice Call • State First & Last Name";
+
+        messageStream.innerHTML = "";
+        try {
+            let data;
+            try {
+                const res = await fetch("/api/voice/start", { method: "POST" });
+                if (!res.ok) throw new Error("API offline");
+                data = await res.json();
+            } catch (err) {
+                data = window.ClientAgentEngine.voiceAuth.startCall();
+            }
+
+            renderAgentResponse(data, () => {
+                // When agent finishes asking for name, automatically start listening!
+                if (isVoiceCallActive) {
+                    setTimeout(listenForSpeech, 400);
+                }
+            });
+        } catch (e) {
+            console.error("Failed to start voice call:", e);
+        }
+    }
+
+    async function endVoiceCall() {
+        isVoiceCallActive = false;
+        voiceCallBtn.className = "call-action-btn start-call";
+        voiceCallBtn.innerHTML = '<i class="fa-solid fa-phone"></i> <span>Start Voice Call (Google TTS)</span>';
+        voiceCallBanner.classList.add("hidden");
+
+        if (activeAudio) {
+            activeAudio.pause();
+            activeAudio = null;
+        }
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+        if (recognition && isRecording) recognition.stop();
+
+        try {
+            try {
+                await fetch("/api/voice/turn", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({message: "hang up"})
+                });
+            } catch (e) {
+                window.ClientAgentEngine.voiceAuth.processTurn("hang up");
+            }
+        } catch (e) {}
+
+        const byeBubble = document.createElement("div");
+        byeBubble.className = "message-bubble agent";
+        byeBubble.innerHTML = `<div class="bubble-meta"><span><i class="fa-solid fa-phone-slash"></i> Call Gateway</span></div><div>📞 **Voice call ended.** Thank you for calling KeyBank Key Privilege.</div>`;
+        messageStream.appendChild(byeBubble);
+        messageStream.scrollTop = messageStream.scrollHeight;
+    }
+
+    async function resetLanguagePreference() {
+        try {
+            try {
+                await fetch("/api/voice/reset-prefs", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({customer_ipi: activeCustomerIpi})
+                });
+            } catch (e) {
+                window.ClientAgentEngine.voiceAuth.clearStoredPreference(activeCustomerIpi);
+            }
+
+            const alertBubble = document.createElement("div");
+            alertBubble.className = "message-bubble agent";
+            alertBubble.innerHTML = `<div class="bubble-meta"><span style="color: #f5c518;"><i class="fa-solid fa-rotate-left"></i> Preference Cleared</span></div><div>🔄 **Language preference reset for Customer IPI \`${activeCustomerIpi}\`.**<br>Next voice call will prompt for language selection as a new caller!</div>`;
+            messageStream.appendChild(alertBubble);
+            messageStream.scrollTop = messageStream.scrollHeight;
+            playGoogleTTS("Language preference has been cleared. The next voice call will prompt for language selection.", "ENG");
+        } catch (e) {
+            console.error("Reset pref error:", e);
+        }
+    }
+
+    function updateCallBannerState(data) {
+        if (!isVoiceCallActive) return;
+
+        const subId = data.subagent_id || "";
+        const step = (data.structured_data && data.structured_data.step) || "";
+
+        if (subId === "root_agent" || data.subagent_title.includes("Supervisor") || subId === "balance_inquiry" || subId === "cc_statement") {
+            callStateBadge.textContent = "CONNECTED: KEY PRIVILEGE CONCIERGE";
+            callBannerText.textContent = "Authenticated VIP Session • Multi-Agent Concierge Active";
+            return;
+        }
+
+        if (step === "COLLECT_PHONE" || data.message.includes("10-digit telephone")) {
+            callStateBadge.textContent = "STEP 2: TELEPHONE VERIFICATION";
+            callBannerText.textContent = "Providing 10-Digit Registered Phone Number";
+        } else if (step === "COLLECT_SSN" || data.message.includes("Social Security Number")) {
+            callStateBadge.textContent = "STEP 3: SSN VERIFICATION";
+            callBannerText.textContent = "Identity Verification • Last 4 Digits of SSN";
+        } else if (step === "COLLECT_LANGUAGE_NEW" || data.message.includes("select your preferred language")) {
+            callStateBadge.textContent = "STEP 4: NEW LANGUAGE SELECTION";
+            callBannerText.textContent = "Selecting Preferred Language (Saved for Future Calls)";
+        } else if (step === "CONFIRM_LANGUAGE_RETURNING" || data.message.includes("preferred language today")) {
+            callStateBadge.textContent = "STEP 4: RETURNING CALLER CONFIRMATION";
+            callBannerText.textContent = "Confirming Stored Language Preference";
+        }
+    }
+
+    // =========================================================================
+    // 5. Customer Profile & UI Rendering
+    // =========================================================================
     function formatMarkdown(text) {
         if (!text) return "";
-        let html = text
+        return text
             .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
             .replace(/\*(.*?)\*/g, "<em>$1</em>")
             .replace(/`(.*?)`/g, "<code>$1</code>")
             .replace(/^> (.*$)/gim, "<blockquote>$1</blockquote>")
             .replace(/\n\n/g, "<br><br>")
             .replace(/\n/g, "<br>");
-        return html;
     }
 
-    // Fetch Customers List (with automatic fallback to ClientAgentEngine on Firebase Hosting)
     async function loadCustomers() {
         try {
             const res = await fetch("/api/customers");
@@ -217,9 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 opt.value = c.ipi;
                 const feeText = c.fee_waived ? "Waived ($0)" : "At Risk ($25 Fee)";
                 opt.textContent = `${c.name} (${c.tier} - Group ${c.group} | ${feeText})`;
-                if (c.ipi === data.active_ipi) {
-                    opt.selected = true;
-                }
+                if (c.ipi === data.active_ipi) opt.selected = true;
                 customerSelect.appendChild(opt);
             });
 
@@ -241,7 +453,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Fetch Profile & Update Sidebar
     async function updateProfileUI() {
         try {
             let p;
@@ -265,11 +476,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const fs = p.fee_status;
             if (fs.is_waived) {
                 feeWaiverBadge.textContent = "WAIVED ($0.00)";
-                feeWaiverBadge.className = "badge-waived";
+                feeWaiverBadge.className = "status-pill waived";
                 remedyBox.style.display = "none";
             } else {
                 feeWaiverBadge.textContent = "AT RISK ($25 FEE)";
-                feeWaiverBadge.className = "badge-at-risk";
+                feeWaiverBadge.className = "status-pill at-risk";
                 remedyBox.style.display = "block";
                 daysRemainingText.textContent = `${fs.days_remaining} Days Remaining in Statement Cycle`;
                 remedyText.textContent = fs.remedy.replace(/•/g, "").trim();
@@ -279,32 +490,32 @@ document.addEventListener("DOMContentLoaded", () => {
             rule1Current.textContent = `$${fs.rule1_balance.toLocaleString("en-US", {minimumFractionDigits: 2})}`;
             const r1Pct = Math.min(100, Math.round((fs.rule1_balance / 25000.0) * 100));
             rule1Progress.style.width = `${r1Pct}%`;
-            rule1Progress.className = `progress-fill ${fs.rule1_met ? "pass" : (r1Pct > 70 ? "warning" : "fail")}`;
+            rule1Progress.className = `meter-fill ${fs.rule1_met ? "pass" : (r1Pct > 70 ? "warning" : "fail")}`;
             rule1Icon.innerHTML = fs.rule1_met ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-xmark"></i>';
-            rule1Icon.className = `rule-status-icon ${fs.rule1_met ? "pass" : "fail"}`;
+            rule1Icon.className = `check-icon ${fs.rule1_met ? "pass" : "fail"}`;
 
             // Rule 2
             rule2Current.textContent = `$${fs.rule2_mortgage_autopay.toLocaleString("en-US", {minimumFractionDigits: 2})} / mo`;
             const r2Pct = fs.rule2_met ? 100 : (fs.rule2_mortgage_autopay > 0 ? 50 : 0);
             rule2Progress.style.width = `${r2Pct}%`;
-            rule2Progress.className = `progress-fill ${fs.rule2_met ? "pass" : "fail"}`;
+            rule2Progress.className = `meter-fill ${fs.rule2_met ? "pass" : "fail"}`;
             rule2Icon.innerHTML = fs.rule2_met ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-xmark"></i>';
-            rule2Icon.className = `rule-status-icon ${fs.rule2_met ? "pass" : "fail"}`;
+            rule2Icon.className = `check-icon ${fs.rule2_met ? "pass" : "fail"}`;
 
             // Rule 3
             rule3Current.textContent = `$${fs.rule3_direct_deposits.toLocaleString("en-US", {minimumFractionDigits: 2})}`;
             const r3Pct = Math.min(100, Math.round((fs.rule3_direct_deposits / 2500.0) * 100));
             rule3Progress.style.width = `${r3Pct}%`;
-            rule3Progress.className = `progress-fill ${fs.rule3_met ? "pass" : (r3Pct > 40 ? "warning" : "fail")}`;
+            rule3Progress.className = `meter-fill ${fs.rule3_met ? "pass" : (r3Pct > 40 ? "warning" : "fail")}`;
             rule3Icon.innerHTML = fs.rule3_met ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-xmark"></i>';
-            rule3Icon.className = `rule-status-icon ${fs.rule3_met ? "pass" : "fail"}`;
+            rule3Icon.className = `check-icon ${fs.rule3_met ? "pass" : "fail"}`;
         } catch (e) {
             console.error("Failed to update profile UI:", e);
         }
     }
 
-    // Initialize Session
     async function initSession(ipi) {
+        if (isVoiceCallActive) return;
         messageStream.innerHTML = "";
         try {
             let data;
@@ -327,9 +538,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Render Agent Response
-    function renderAgentResponse(data) {
-        // Update Agent Header
+    function renderAgentResponse(data, onSpeechEndCallback = null) {
         agentTitle.textContent = data.subagent_title || "Key Privilege Root Supervisor";
         inspectSubagent.textContent = data.subagent_id;
         inspectPrompt.textContent = data.audio_prompt_code || "[K2U_ENG.700.au]";
@@ -358,30 +567,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const meta = document.createElement("div");
         meta.className = "bubble-meta";
-        meta.innerHTML = `<span><i class="fa-solid fa-robot"></i> ${data.subagent_title}</span> <span class="prompt-tag">${data.audio_prompt_code || ""}</span>`;
+        meta.innerHTML = `<span><i class="fa-solid fa-headset"></i> ${data.subagent_title}</span> <span class="prompt-tag">${data.audio_prompt_code || ""}</span>`;
         bubble.appendChild(meta);
 
         const content = document.createElement("div");
         content.innerHTML = formatMarkdown(data.message);
         bubble.appendChild(content);
 
-        // TTS Repeat Button
+        // Speech Replay Button
         const actions = document.createElement("div");
         actions.className = "bubble-actions";
         const ttsBtn = document.createElement("button");
         ttsBtn.className = "btn-bubble-speech";
-        ttsBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Play Speech Audio';
-        ttsBtn.onclick = () => speakText(data.speech_message || data.message);
+        ttsBtn.innerHTML = '<i class="fa-brands fa-google"></i> Google TTS Replay';
+        ttsBtn.onclick = () => playGoogleTTS(data.speech_message || data.message, currentLangLabel.textContent);
         actions.appendChild(ttsBtn);
         bubble.appendChild(actions);
 
         messageStream.appendChild(bubble);
         messageStream.scrollTop = messageStream.scrollHeight;
 
-        // Auto speak
-        speakText(data.speech_message || data.message);
+        // Update Voice Call Banner state
+        updateCallBannerState(data);
 
-        // Quick Replies
+        // Auto Speak with Google TTS
+        playGoogleTTS(data.speech_message || data.message, currentLangLabel.textContent, onSpeechEndCallback);
+
+        // Quick Reply Suggestions
         quickRepliesBar.innerHTML = "";
         if (data.suggested_quick_replies && data.suggested_quick_replies.length > 0) {
             data.suggested_quick_replies.forEach(reply => {
@@ -397,7 +609,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Send Message
+    // =========================================================================
+    // 6. Conversational Message Handling (Voice Call vs Chat)
+    // =========================================================================
     async function handleSendMessage() {
         const text = userInput.value.trim();
         if (!text) return;
@@ -411,6 +625,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
         userInput.value = "";
 
+        // If in Interactive Voice Call Mode -> route to Voice Auth & Gateway
+        if (isVoiceCallActive) {
+            try {
+                let data;
+                try {
+                    const res = await fetch("/api/voice/turn", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({message: text})
+                    });
+                    if (!res.ok) throw new Error("API offline");
+                    data = await res.json();
+                } catch (err) {
+                    data = window.ClientAgentEngine.voiceAuth.processTurn(text);
+                }
+
+                renderAgentResponse(data, () => {
+                    // Continuous hands-free call: auto-listen after agent finishes speaking
+                    if (isVoiceCallActive) {
+                        setTimeout(listenForSpeech, 400);
+                    }
+                });
+                await updateProfileUI();
+            } catch (e) {
+                console.error("Voice turn error:", e);
+            }
+            return;
+        }
+
+        // Standard Chat Mode
         try {
             let data;
             try {
@@ -431,14 +675,30 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Event Listeners
+    // =========================================================================
+    // 7. Event Listeners
+    // =========================================================================
     sendBtn.addEventListener("click", handleSendMessage);
     userInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") handleSendMessage();
     });
 
+    voiceCallBtn.addEventListener("click", () => {
+        if (isVoiceCallActive) {
+            endVoiceCall();
+        } else {
+            startVoiceCall();
+        }
+    });
+
+    endCallBtn.addEventListener("click", endVoiceCall);
+    resetPrefBtn.addEventListener("click", resetLanguagePreference);
+
     customerSelect.addEventListener("change", async (e) => {
         activeCustomerIpi = e.target.value;
+        if (isVoiceCallActive) {
+            endVoiceCall();
+        }
         await initSession(activeCustomerIpi);
     });
 
@@ -462,10 +722,11 @@ document.addEventListener("DOMContentLoaded", () => {
         isTtsEnabled = !isTtsEnabled;
         if (isTtsEnabled) {
             ttsIcon.className = "fa-solid fa-volume-high";
-            speechToggleBtn.title = "Text-to-Speech: Enabled";
+            speechToggleBtn.title = "Google TTS: Enabled";
         } else {
             ttsIcon.className = "fa-solid fa-volume-xmark";
-            speechToggleBtn.title = "Text-to-Speech: Muted";
+            speechToggleBtn.title = "Google TTS: Muted";
+            if (activeAudio) activeAudio.pause();
             if (window.speechSynthesis) window.speechSynthesis.cancel();
         }
     });

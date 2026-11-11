@@ -12,6 +12,8 @@ from urllib.parse import urlparse
 from src.root_agent import RootPrivilegeAgent
 from src.customer_service import CustomerService
 from src.fee_avoidance_engine import FeeAvoidanceEngine
+from src.preference_store import PreferenceStore
+from src.voice_auth_agent import VoiceAuthAgent
 from src.models import Language
 
 PORT = int(os.environ.get("PORT", 8080))
@@ -23,6 +25,7 @@ class AgentApiHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=WEB_DIR, **kwargs)
 
     agent = RootPrivilegeAgent()
+    voice_agent = VoiceAuthAgent(agent)
     active_profile = CustomerService.get_sample_customers()["031379551"] # Default to Eleanor Vance (At-Risk)
 
     def do_GET(self):
@@ -44,6 +47,23 @@ class AgentApiHandler(SimpleHTTPRequestHandler):
                     "days_remaining": fee_stat.days_remaining_in_cycle
                 })
             self._send_json({"customers": summary, "active_ipi": self.active_profile.customer_ipi})
+            return
+
+        if parsed.path == "/api/preferences":
+            prefs = PreferenceStore.load_all()
+            self._send_json({"preferences": prefs})
+            return
+
+        if parsed.path == "/api/voice/status":
+            va = AgentApiHandler.voice_agent
+            self._send_json({
+                "call_active": va.call_active,
+                "state": va.state.value,
+                "collected_name": va.collected_name,
+                "collected_phone": va.collected_phone,
+                "authenticated_ipi": va.authenticated_profile.customer_ipi if va.authenticated_profile else None,
+                "active_language": va.authenticated_profile.preferred_language.value if va.authenticated_profile else None
+            })
             return
 
         if parsed.path == "/api/profile":
@@ -98,6 +118,25 @@ class AgentApiHandler(SimpleHTTPRequestHandler):
             payload = json.loads(body.decode("utf-8"))
         except Exception:
             payload = {}
+
+        if parsed.path == "/api/voice/start":
+            resp = AgentApiHandler.voice_agent.start_call()
+            self._send_json(self._serialize_response(resp))
+            return
+
+        if parsed.path == "/api/voice/turn":
+            user_text = payload.get("message", "")
+            resp = AgentApiHandler.voice_agent.process_turn(user_text)
+            if AgentApiHandler.voice_agent.authenticated_profile:
+                AgentApiHandler.active_profile = AgentApiHandler.voice_agent.authenticated_profile
+            self._send_json(self._serialize_response(resp))
+            return
+
+        if parsed.path == "/api/voice/reset-prefs":
+            ipi = payload.get("customer_ipi", "031379551")
+            PreferenceStore.clear_preference(ipi)
+            self._send_json({"status": "cleared", "customer_ipi": ipi})
+            return
 
         if parsed.path == "/api/session/init":
             ipi = payload.get("customer_ipi", "031379551")

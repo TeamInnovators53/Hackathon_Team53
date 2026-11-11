@@ -407,6 +407,228 @@ window.ClientAgentEngine = (() => {
         };
     }
 
+    // Voice Auth & Preference Engine for Client-Side Operation
+    const VoiceAuthEngine = {
+        state: "IDLE",
+        collectedName: "",
+        collectedPhone: "",
+        collectedSsn: "",
+        authenticatedCustomer: null,
+        storedLang: null,
+        callActive: false,
+
+        getStoredPreference(ipi) {
+            try {
+                return localStorage.getItem("keybank_lang_pref_" + ipi);
+            } catch (e) {
+                return null;
+            }
+        },
+
+        setStoredPreference(ipi, lang) {
+            try {
+                localStorage.setItem("keybank_lang_pref_" + ipi, lang);
+            } catch (e) {}
+        },
+
+        clearStoredPreference(ipi) {
+            try {
+                localStorage.removeItem("keybank_lang_pref_" + ipi);
+            } catch (e) {}
+        },
+
+        startCall() {
+            this.state = "COLLECT_NAME";
+            this.collectedName = "";
+            this.collectedPhone = "";
+            this.collectedSsn = "";
+            this.authenticatedCustomer = null;
+            this.storedLang = null;
+            this.callActive = true;
+
+            return {
+                subagent_id: "voice_auth_agent",
+                subagent_title: "KeyBank Voice Call Gateway",
+                message: "📞 **[Incoming Voice Call Connected]**\n\nThank you for calling KeyBank Key Privilege Private Client Services. To access your privileged account securely, may I please have your **first and last name**?",
+                speech_message: "Thank you for calling KeyBank Key Privilege Private Client Services. To access your privileged account securely, may I please have your first and last name?",
+                audio_prompt_code: "[K2U_ENG.AUTH_NAME.au]",
+                suggested_quick_replies: ["Eleanor Vance", "Dr. Julian Sterling", "Marcus Thorne", "Sofia Ramirez-Cruz"],
+                structured_data: { step: "COLLECT_NAME" }
+            };
+        },
+
+        processTurn(userText) {
+            const raw = userText.trim();
+            const lower = raw.toLowerCase();
+
+            if (lower.includes("hang up") || lower.includes("end call") || lower.includes("disconnect")) {
+                this.callActive = false;
+                this.state = "IDLE";
+                return {
+                    subagent_id: "voice_auth_agent",
+                    subagent_title: "KeyBank Voice Call Gateway",
+                    message: "📞 **[Voice Call Disconnected]** Thank you for calling KeyBank Key Privilege. Goodbye.",
+                    speech_message: "Thank you for calling KeyBank Key Privilege. Goodbye.",
+                    audio_prompt_code: "[K2U_ENG.GOODBYE.au]"
+                };
+            }
+
+            if (this.state === "COLLECT_NAME") {
+                this.collectedName = raw.replace(/\b(my name is|i am|this is|speaking)\b/gi, "").trim();
+                this.state = "COLLECT_PHONE";
+                const firstName = this.collectedName.split(" ")[0] || "valued client";
+                return {
+                    subagent_id: "voice_auth_agent",
+                    subagent_title: "KeyBank Voice Call Gateway",
+                    message: `Thank you, **${this.collectedName}**.\n\nPlease state or enter the **10-digit telephone number** registered to your account.`,
+                    speech_message: `Thank you, ${firstName}. Please provide the 10-digit telephone number registered to your account.`,
+                    audio_prompt_code: "[K2U_ENG.AUTH_PHONE.au]",
+                    suggested_quick_replies: ["(385) 456-9511", "(330) 714-8766", "(216) 555-1234", "(305) 555-7890"],
+                    structured_data: { step: "COLLECT_PHONE" }
+                };
+            }
+
+            if (this.state === "COLLECT_PHONE") {
+                const digits = raw.replace(/\D/g, "");
+                if (digits.length < 7) {
+                    return {
+                        subagent_id: "voice_auth_agent",
+                        subagent_title: "KeyBank Voice Call Gateway",
+                        message: "⚠️ Please state or enter your 10-digit phone number (e.g. 385-456-9511).",
+                        speech_message: "Please state or enter your 10-digit telephone number.",
+                        audio_prompt_code: "[K2U_ENG.RETRY_PHONE.au]"
+                    };
+                }
+                this.collectedPhone = digits.slice(-10);
+                this.state = "COLLECT_SSN";
+                return {
+                    subagent_id: "voice_auth_agent",
+                    subagent_title: "KeyBank Voice Call Gateway",
+                    message: `Got it: **(${this.collectedPhone.slice(0,3)}) ${this.collectedPhone.slice(3,6)}-${this.collectedPhone.slice(6)}**.\n\nFor identity verification, please state or enter the **last 4 digits of your Social Security Number** (SSN).`,
+                    speech_message: "Thank you. For your identity verification, please provide the last 4 digits of your Social Security Number.",
+                    audio_prompt_code: "[K2U_ENG.AUTH_SSN.au]",
+                    suggested_quick_replies: ["3584", "8210", "4491", "6120"],
+                    structured_data: { step: "COLLECT_SSN" }
+                };
+            }
+
+            if (this.state === "COLLECT_SSN") {
+                const digits = raw.replace(/\D/g, "");
+                this.collectedSsn = digits.slice(-4);
+
+                let matched = null;
+                for (const ipi in customers) {
+                    const c = customers[ipi];
+                    const cleanPhone = c.phone.replace(/\D/g, "");
+                    if (c.ssn_last4 === this.collectedSsn && (cleanPhone === this.collectedPhone || cleanPhone.endsWith(this.collectedPhone.slice(-7)))) {
+                        matched = c;
+                        break;
+                    }
+                }
+                if (!matched) {
+                    for (const ipi in customers) {
+                        const c = customers[ipi];
+                        if (c.ssn_last4 === this.collectedSsn) {
+                            matched = c;
+                            break;
+                        }
+                    }
+                }
+
+                if (!matched) {
+                    this.state = "COLLECT_NAME";
+                    return {
+                        subagent_id: "voice_auth_agent",
+                        subagent_title: "KeyBank Voice Call Gateway",
+                        message: "❌ **Verification Unsuccessful**\n\nWe were unable to verify your identity with the details provided. Let's try again. Please state your **first and last name**.",
+                        speech_message: "We were unable to verify your identity with the details provided. Let's try again. Please state your first and last name.",
+                        audio_prompt_code: "[K2U_ENG.AUTH_FAILED.au]",
+                        suggested_quick_replies: ["Eleanor Vance", "Dr. Julian Sterling", "Marcus Thorne", "Sofia Ramirez-Cruz"]
+                    };
+                }
+
+                this.authenticatedCustomer = matched;
+                activeIpi = matched.ipi;
+                const stored = this.getStoredPreference(matched.ipi);
+
+                if (stored) {
+                    this.storedLang = stored;
+                    this.state = "CONFIRM_LANGUAGE_RETURNING";
+                    const isSpa = stored === "SPA";
+                    return {
+                        subagent_id: "voice_auth_agent",
+                        subagent_title: "KeyBank Identity Verification",
+                        message: isSpa ?
+                            `✅ **Identidad Verificada: ${matched.name}**\n\n¡Bienvenida de nuevo! Tenemos **Español** guardado como su idioma preferido.\n\n¿Es **Español** su idioma preferido hoy, o desea elegir otro idioma?` :
+                            `✅ **Identity Verified: ${matched.name}**\n\nWelcome back! We have **English** on file as your preferred language.\n\nIs **English** your preferred language today, or would you like to choose another language?`,
+                        speech_message: isSpa ?
+                            `Identidad verificada. ¡Bienvenida de nuevo, ${matched.name}! Tenemos el español registrado como su idioma preferido. ¿Desea continuar en español, o prefiere elegir otro idioma?` :
+                            `Identity verified. Welcome back, ${matched.name}! We have English on file as your preferred language. Is English your preferred language today, or would you like to choose another language?`,
+                        audio_prompt_code: "[K2U_ENG.LANG_CONFIRM_RETURNING.au]",
+                        suggested_quick_replies: isSpa ? ["Sí, continuar en Español", "Cambiar a English"] : ["Yes, keep English", "Change to Spanish"],
+                        structured_data: { step: "CONFIRM_LANGUAGE_RETURNING", ipi: matched.ipi, stored_preference: stored }
+                    };
+                } else {
+                    this.state = "COLLECT_LANGUAGE_NEW";
+                    return {
+                        subagent_id: "voice_auth_agent",
+                        subagent_title: "KeyBank Identity Verification",
+                        message: `✅ **Identity Verified: ${matched.name}**\n\nWelcome to KeyBank Key Privilege Concierge services. Please select your **preferred language** for this call and future visits:\n\n• Say **'English'**\n• Diga **'Español'** (Spanish)`,
+                        speech_message: `Identity verified. Welcome to Key Privilege, ${matched.name}. Please select your preferred language. You can say English, or Español for Spanish.`,
+                        audio_prompt_code: "[K2U_ENG.LANG_SELECT_NEW.au]",
+                        suggested_quick_replies: ["English", "Español (Spanish)"],
+                        structured_data: { step: "COLLECT_LANGUAGE_NEW", ipi: matched.ipi }
+                    };
+                }
+            }
+
+            if (this.state === "COLLECT_LANGUAGE_NEW") {
+                const isSpa = lower.includes("spanish") || lower.includes("español") || lower.includes("espanol");
+                const chosen = isSpa ? "SPA" : "ENG";
+                this.setStoredPreference(this.authenticatedCustomer.ipi, chosen);
+                this.authenticatedCustomer.language = chosen;
+                this.state = "AUTHENTICATED";
+
+                const rootResp = handleTraditionalMenu(this.authenticatedCustomer, evaluateFeeStatus(this.authenticatedCustomer));
+                rootResp.message = `✨ *Your language preference (**${isSpa ? "Español" : "English"}**) has been saved for future calls.*\n\n` + rootResp.message;
+                rootResp.speech_message = (isSpa ? "Preferencia guardada. " : "Preference saved. ") + rootResp.speech_message;
+                return rootResp;
+            }
+
+            if (this.state === "CONFIRM_LANGUAGE_RETURNING") {
+                const stored = this.storedLang || "ENG";
+                let chosen = stored;
+                let note = "";
+
+                if (lower.includes("spanish") || lower.includes("español")) {
+                    chosen = "SPA";
+                    this.setStoredPreference(this.authenticatedCustomer.ipi, "SPA");
+                    note = "Updated your saved language preference to **Español**.";
+                } else if (lower.includes("english") || lower.includes("inglés")) {
+                    chosen = "ENG";
+                    this.setStoredPreference(this.authenticatedCustomer.ipi, "ENG");
+                    note = "Updated your saved language preference to **English**.";
+                } else {
+                    chosen = stored;
+                    note = `Continuing in your preferred language: **${chosen === "SPA" ? "Español" : "English"}**.`;
+                }
+
+                this.authenticatedCustomer.language = chosen;
+                this.state = "AUTHENTICATED";
+
+                const rootResp = handleTraditionalMenu(this.authenticatedCustomer, evaluateFeeStatus(this.authenticatedCustomer));
+                rootResp.message = `✨ *${note}*\n\n` + rootResp.message;
+                return rootResp;
+            }
+
+            if (this.state === "AUTHENTICATED") {
+                return window.ClientAgentEngine.routeAndExecute(userText);
+            }
+
+            return this.startCall();
+        }
+    };
+
     // Public API
     return {
         getCustomers: () => Object.values(customers),
@@ -418,6 +640,7 @@ window.ClientAgentEngine = (() => {
         setActiveIpi: (ipi) => {
             if (customers[ipi]) activeIpi = ipi;
         },
+        voiceAuth: VoiceAuthEngine,
         initializeSession: (ipi) => {
             if (ipi) activeIpi = ipi;
             const c = customers[activeIpi];

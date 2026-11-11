@@ -882,6 +882,139 @@ body.luxury-dark {
     100% { transform: scale(1); box-shadow: 0 0 8px var(--key-red-glow); }
 }
 
+.call-action-btn.start-call {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+    transition: all 0.2s ease;
+}
+
+.call-action-btn.start-call:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+    filter: brightness(1.1);
+}
+
+.call-action-btn.active-call {
+    background: linear-gradient(135deg, var(--key-red) 0%, #9e0e26 100%);
+    box-shadow: 0 4px 16px var(--key-red-glow);
+    animation: activeCallPulse 1.8s infinite;
+}
+
+@keyframes activeCallPulse {
+    0% { box-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
+    50% { box-shadow: 0 0 22px rgba(220, 38, 38, 0.85); }
+    100% { box-shadow: 0 0 10px rgba(220, 38, 38, 0.5); }
+}
+
+.btn-reset-pref {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+}
+.btn-reset-pref:hover {
+    color: var(--status-cyan);
+    border-color: rgba(6, 182, 212, 0.4);
+}
+
+/* Voice Call Telephony Progress Banner */
+.voice-call-telephony-banner {
+    background: linear-gradient(90deg, rgba(5, 150, 105, 0.22) 0%, rgba(14, 25, 54, 0.85) 100%);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.4);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 15;
+    animation: fadeInSlide 0.25s ease-out;
+}
+
+.voice-call-telephony-banner.hidden {
+    display: none;
+}
+
+.call-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.call-pulse-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 10px #10b981;
+    animation: pulseDot 1.4s infinite;
+}
+
+.call-state-pill {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    color: #34d399;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.04em;
+}
+
+.call-banner-text {
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.call-banner-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.google-tts-badge {
+    background: rgba(66, 133, 244, 0.15);
+    border: 1px solid rgba(66, 133, 244, 0.35);
+    color: #60a5fa;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-hangup {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    color: #f87171;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.btn-hangup:hover {
+    background: var(--key-red);
+    color: #fff;
+    box-shadow: 0 0 12px var(--key-red-glow);
+}
+
 .dtmf-toggle-btn {
     background: rgba(14, 25, 54, 0.8);
     border: 1px solid var(--key-navy-border);

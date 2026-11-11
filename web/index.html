@@ -197,6 +197,12 @@
                 </div>
 
                 <div class="topbar-actions">
+                    <button id="voiceCallBtn" class="call-action-btn start-call" title="Start Interactive Hands-Free Voice Call with Authentication">
+                        <i class="fa-solid fa-phone"></i> <span>Start Voice Call (Google TTS)</span>
+                    </button>
+                    <button id="resetPrefBtn" class="glass-btn btn-reset-pref" title="Clear Stored Language Preference to Test Onboarding vs Returning Caller">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Pref
+                    </button>
                     <button id="speechToggleBtn" class="action-round-btn active" title="Toggle Auto Text-to-Speech">
                         <i id="ttsIcon" class="fa-solid fa-volume-high"></i>
                     </button>
@@ -205,6 +211,21 @@
                     </button>
                     <button id="toggleDtmfBtn" class="dtmf-toggle-btn" title="Open Telephone DTMF Keypad">
                         <i class="fa-solid fa-phone-flip"></i> Touch-Tone Dialpad
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inbound Voice Call Interactive Telephony Banner -->
+            <div id="voiceCallBanner" class="voice-call-telephony-banner hidden">
+                <div class="call-banner-left">
+                    <span class="call-pulse-dot"></span>
+                    <span id="callStateBadge" class="call-state-pill">STEP 1: NAME AUTHENTICATION</span>
+                    <span id="callBannerText" class="call-banner-text">Inbound Voice Call • Stating First & Last Name</span>
+                </div>
+                <div class="call-banner-right">
+                    <span class="google-tts-badge"><i class="fa-brands fa-google"></i> Google TTS</span>
+                    <button id="endCallBtn" class="btn-hangup" title="Hang up and disconnect voice call">
+                        <i class="fa-solid fa-phone-slash"></i> Hang Up
                     </button>
                 </div>
             </div>
