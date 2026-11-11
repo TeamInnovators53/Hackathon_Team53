@@ -7,13 +7,14 @@ import json
 import os
 import sys
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
 from src.root_agent import RootPrivilegeAgent
 from src.customer_service import CustomerService
 from src.fee_avoidance_engine import FeeAvoidanceEngine
 from src.preference_store import PreferenceStore
 from src.voice_auth_agent import VoiceAuthAgent
+from src.google_tts_service import GoogleTTSService
 from src.models import Language
 
 PORT = int(os.environ.get("PORT", 8080))
@@ -52,6 +53,29 @@ class AgentApiHandler(SimpleHTTPRequestHandler):
         if parsed.path == "/api/preferences":
             prefs = PreferenceStore.load_all()
             self._send_json({"preferences": prefs})
+            return
+
+        if parsed.path == "/api/tts":
+            query = parse_qs(parsed.query)
+            raw_text = query.get("text", [""])[0]
+            lang = query.get("lang", ["en"])[0]
+            clean_text = GoogleTTSService.clean_text_for_speech(raw_text)
+            if not clean_text:
+                self.send_response(400)
+                self.end_headers()
+                return
+            try:
+                audio_bytes = GoogleTTSService.synthesize_google_neural(clean_text, lang)
+                self.send_response(200)
+                self.send_header("Content-Type", "audio/mpeg")
+                self.send_header("Content-Length", str(len(audio_bytes)))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(audio_bytes)
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
             return
 
         if parsed.path == "/api/voice/status":

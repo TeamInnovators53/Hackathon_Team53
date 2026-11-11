@@ -136,6 +136,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================================================================
     // 2. Google TTS (Text-to-Speech) Audio Engine
     // =========================================================================
+    let availableVoices = [];
+    function loadVoices() {
+        if (!window.speechSynthesis) return;
+        availableVoices = window.speechSynthesis.getVoices();
+    }
+    if (window.speechSynthesis) {
+        loadVoices();
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
     function playGoogleTTS(text, lang = "ENG", onEndCallback = null) {
         if (!isTtsEnabled || !text) {
             if (onEndCallback) onEndCallback();
@@ -147,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/[*#`_>]/g, "")
             .replace(/\[K2U_.*?\.au\]/gi, "")
             .replace(/\[.*?\]/g, "")
-            .replace(/\$\d+(\.\d+)?/g, (m) => m.replace("$", "") + " dollars")
+            .replace(/\$(\d[\d,]*(?:\.\d{2})?)/g, "$1 dollars")
             .replace(/\n+/g, " ")
             .trim();
 
@@ -178,31 +188,52 @@ document.addEventListener("DOMContentLoaded", () => {
             if (onEndCallback) onEndCallback();
         };
 
-        // Attempt 1: Direct Google Translate Neural Audio Stream
-        try {
-            if (activeAudio) {
-                activeAudio.pause();
-                activeAudio = null;
-            }
-            const encoded = encodeURIComponent(cleanSpeech.slice(0, 200));
-            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${langCode}&client=tw-ob&q=${encoded}`;
-            const audio = new Audio(ttsUrl);
-            activeAudio = audio;
+        // Stop any ongoing audio playback
+        if (activeAudio) {
+            activeAudio.pause();
+            activeAudio = null;
+        }
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
 
-            audio.onended = () => cleanup();
-            audio.onerror = () => {
-                // Fallback to browser Google Neural voice
+        // Attempt 1: Server-side Google TTS MP3 Audio Stream (/api/tts)
+        const serverTtsUrl = `/api/tts?lang=${langCode}&text=${encodeURIComponent(cleanSpeech)}`;
+        const audio = new Audio(serverTtsUrl);
+        activeAudio = audio;
+
+        let hasFallenBack = false;
+        const triggerFallback = () => {
+            if (hasFallenBack) return;
+            hasFallenBack = true;
+            // Attempt 2: Direct Google Translate TTS with no-referrer
+            const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${langCode}&client=tw-ob&q=${encodeURIComponent(cleanSpeech.slice(0, 200))}`;
+            const directAudio = new Audio();
+            directAudio.referrerPolicy = "no-referrer";
+            directAudio.crossOrigin = "anonymous";
+            directAudio.src = directUrl;
+            activeAudio = directAudio;
+
+            directAudio.onended = () => cleanup();
+            directAudio.onerror = () => {
+                // Attempt 3: Web Speech API with Google Neural Voice
                 playBrowserGoogleVoice(cleanSpeech, langCode, cleanup);
             };
 
-            const playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(() => {
+            const directPromise = directAudio.play();
+            if (directPromise !== undefined) {
+                directPromise.catch(() => {
                     playBrowserGoogleVoice(cleanSpeech, langCode, cleanup);
                 });
             }
-        } catch (e) {
-            playBrowserGoogleVoice(cleanSpeech, langCode, cleanup);
+        };
+
+        audio.onended = () => cleanup();
+        audio.onerror = () => triggerFallback();
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(() => triggerFallback());
         }
     }
 
@@ -216,9 +247,12 @@ document.addEventListener("DOMContentLoaded", () => {
         utterance.rate = 1.02;
         utterance.lang = langCode === "es" ? "es-US" : "en-US";
 
-        // Try selecting Google Neural Voice
-        const voices = window.speechSynthesis.getVoices();
-        const googleVoice = voices.find(v => v.name.includes("Google") && (v.lang.startsWith(langCode) || v.lang.includes(langCode)));
+        // Try selecting Google Neural Voice from loaded list
+        const voices = availableVoices.length > 0 ? availableVoices : window.speechSynthesis.getVoices();
+        const googleVoice = voices.find(v => v.name.includes("Google") && (v.lang.startsWith(langCode) || v.lang.includes(langCode)))
+            || voices.find(v => (v.name.includes("Natural") || v.name.includes("Online")) && v.lang.startsWith(langCode))
+            || voices.find(v => v.lang.startsWith(langCode));
+
         if (googleVoice) {
             utterance.voice = googleVoice;
         }

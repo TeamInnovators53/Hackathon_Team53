@@ -7,45 +7,45 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --key-red: #c41230;
-            --key-red-dark: #9e0e26;
-            --key-navy: #002d62;
-            --key-navy-dark: #071b3b;
-            --key-gold: #d4af37;
-            --bg-dark: #0b1329;
-            --card-bg: #131f42;
-            --text-light: #f8fafc;
-            --text-muted: #94a3b8;
-            --success: #10b981;
-            --warning: #f59e0b;
+            --key-red: #CC0000;              /* KeyBank Red | PMS 1795 */
+            --key-red-dark: #B30000;
+            --key-black: #000000;            /* Headlines & Primary Titles */
+            --key-gray-90: #1A1A1A;
+            --key-gray-80: #333333;          /* Body copy */
+            --key-gray-70: #4C4C4C;          /* ADA 70% Gray */
+            --bg-page: #F4F6F9;              /* Crisp Canvas */
+            --card-bg: #FFFFFF;              /* Liberal White Space */
+            --border-subtle: #E2E6EA;
+            --success: #00875A;
+            --warning: #D97706;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-light);
+            background-color: var(--bg-page);
+            color: var(--key-gray-80);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
         header {
-            background: rgba(7, 27, 59, 0.85);
-            backdrop-filter: blur(10px);
+            background: #FFFFFF;
             padding: 16px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid var(--border-subtle);
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .brand {
@@ -63,16 +63,20 @@
             align-items: center;
             justify-content: center;
             font-size: 20px;
+            color: #FFFFFF;
+            box-shadow: 0 2px 6px rgba(204, 0, 0, 0.25);
         }
 
         .title {
-            font-size: 1.2rem;
-            font-weight: 700;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--key-black);
         }
 
         .subtitle {
             font-size: 0.8rem;
-            color: var(--text-muted);
+            color: var(--key-gray-70);
+            font-weight: 500;
         }
 
         .nav-links {
@@ -86,7 +90,7 @@
             text-decoration: none;
             padding: 8px 16px;
             border-radius: 6px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.9rem;
             display: flex;
             align-items: center;
@@ -104,15 +108,15 @@
             padding: 40px 24px;
             display: flex;
             flex-direction: column;
-            gap: 48px;
+            gap: 40px;
         }
 
         .slide {
             background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
             padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
             position: relative;
             overflow: hidden;
         }
@@ -128,25 +132,25 @@
         }
 
         .slide-tag {
-            color: var(--warning);
+            color: var(--key-red);
             font-size: 0.85rem;
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.08em;
             margin-bottom: 8px;
         }
 
         .slide-title {
-            font-size: 2rem;
+            font-size: 1.85rem;
             font-weight: 800;
-            margin-bottom: 20px;
-            color: white;
+            margin-bottom: 16px;
+            color: var(--key-black);
         }
 
         .slide-body {
             font-size: 1.05rem;
             line-height: 1.65;
-            color: #cbd5e1;
+            color: var(--key-gray-80);
         }
 
         .grid-3 {
@@ -164,20 +168,30 @@
         }
 
         .feature-box {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
+            background: #F8F9FA;
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
             padding: 24px;
         }
 
         .feature-icon {
             font-size: 1.8rem;
-            color: var(--warning);
+            color: var(--key-red);
             margin-bottom: 12px;
         }
 
         .feature-title {
             font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--key-black);
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            font-size: 0.92rem;
+            color: var(--key-gray-70);
+            line-height: 1.5;
+        }
             font-weight: 700;
             margin-bottom: 8px;
             color: white;
