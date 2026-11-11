@@ -14,7 +14,7 @@ from src.customer_service import CustomerService
 from src.fee_avoidance_engine import FeeAvoidanceEngine
 from src.models import Language
 
-PORT = 8080
+PORT = int(os.environ.get("PORT", 8080))
 WEB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 
 

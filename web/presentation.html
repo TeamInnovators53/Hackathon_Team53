@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackathon Team 53 | Key Privilege Multi-Agent Pitch Deck</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --key-red: #c41230;
+            --key-red-dark: #9e0e26;
+            --key-navy: #002d62;
+            --key-navy-dark: #071b3b;
+            --key-gold: #d4af37;
+            --bg-dark: #0b1329;
+            --card-bg: #131f42;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(7, 27, 59, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            background: var(--key-red);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-live {
+            background: var(--key-red);
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-live:hover {
+            background: var(--key-red-dark);
+        }
+
+        .deck-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+        }
+
+        .slide {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: var(--key-red);
+        }
+
+        .slide-tag {
+            color: var(--warning);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .slide-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .slide-body {
+            font-size: 1.05rem;
+            line-height: 1.65;
+            color: #cbd5e1;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-top: 24px;
+        }
+
+        .feature-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .feature-icon {
+            font-size: 1.8rem;
+            color: var(--warning);
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .rule-pill {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--key-red);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .agent-list {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .agent-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .agent-pill i {
+            color: var(--warning);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="brand">
+            <div class="logo"><i class="fa-solid fa-key"></i></div>
+            <div>
+                <div class="title">KeyBank Key Privilege Concierge Bot</div>
+                <div class="subtitle">Hackathon Team 53 • Team Innovators Pitch Deck</div>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="btn-live"><i class="fa-solid fa-play"></i> Open Live Bot Simulator</a>
+        </div>
+    </header>
+
+    <main class="deck-container">
+        <!-- Slide 1: The Problem -->
+        <section class="slide">
+            <div class="slide-tag">Slide 1 • The Business Challenge</div>
+            <h2 class="slide-title">The $25 Monthly Fee Trap & Friction for VIP Clients</h2>
+            <div class="slide-body">
+                <p>Key Privilege Checking accounts represent KeyBank's most profitable relationship clients. However, maintaining the account fee-free requires meeting strict monthly criteria.</p>
+                
+                <div class="grid-3">
+                    <div class="feature-box">
+                        <div class="feature-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="feature-title">Unexpected Service Charges</div>
+                        <div class="feature-desc">Clients who miss the cutoff by just a few hundred dollars or delayed payroll receive surprise $25.00 maintenance fees, causing high call volume and fee reversal disputes.</div>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-icon"><i class="fa-solid fa-phone-slash"></i></div>
+                        <div class="feature-title">Generic IVR Disconnect</div>
+                        <div class="feature-desc">Traditional contact centers subject high-net-worth callers to generic menus, failing to acknowledge their Household Relationship Group tier or proactive fee status.</div>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <div class="feature-title">Repetitive Transfers</div>
+                        <div class="feature-desc">When escalated, callers must repeat their account details and problem description because telephony routing lacks warm session context.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 2: The Solution -->
+        <section class="slide">
+            <div class="slide-tag">Slide 2 • Team Innovators' Solution</div>
+            <h2 class="slide-title">Agentic Multi-Agent Mesh: Root + 8 Domain Sub-Agents</h2>
+            <div class="slide-body">
+                <p>We engineered a modern multi-agent conversational architecture that orchestrates customer intent across 8 specialized banking domains with automated proactive guards.</p>
+
+                <div class="agent-list">
+                    <div class="agent-pill"><i class="fa-solid fa-credit-card"></i> 1. CC Statement</div>
+                    <div class="agent-pill"><i class="fa-solid fa-scale-balanced"></i> 2. Balance Inquiry</div>
+                    <div class="agent-pill"><i class="fa-solid fa-shield-halved"></i> 3. Overdraft & Offers</div>
+                    <div class="agent-pill"><i class="fa-solid fa-bag-shopping"></i> 4. Purchase History</div>
+                    <div class="agent-pill"><i class="fa-solid fa-bell"></i> 5. Due Reminders</div>
+                    <div class="agent-pill"><i class="fa-solid fa-headset"></i> 6. Priority Handover</div>
+                    <div class="agent-pill"><i class="fa-solid fa-calculator"></i> 7. Traditional Menu</div>
+                    <div class="agent-pill"><i class="fa-solid fa-globe"></i> 8. Language Selection</div>
+                </div>
+
+                <div class="grid-2" style="margin-top: 24px;">
+                    <div class="feature-box">
+                        <div class="feature-title"><i class="fa-solid fa-sitemap" style="color: var(--warning);"></i> Root Supervisor Orchestration</div>
+                        <div class="feature-desc">Evaluates intent confidence, handles DTMF touch tones 1–7, manages bilingual sessions (ENG/SPA), and automatically injects fee warnings into menu announcements.</div>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-title"><i class="fa-solid fa-user-shield" style="color: var(--warning);"></i> Relationship Group Mapping</div>
+                        <div class="feature-desc">Dynamically identifies household groups (A–H) from VRU_APP_SCHEMA, granting instant VIP treatment and segregating Laurel Road accounts to LR_DEFAULT.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3: Maintenance Fee Guard -->
+        <section class="slide">
+            <div class="slide-tag">Slide 3 • Proactive Maintenance Fee Avoidance Engine</div>
+            <h2 class="slide-title">Zero-Surprise Banking: Proactive Real-Time Remediation</h2>
+            <div class="slide-body">
+                <p>The Fee Avoidance Engine evaluates all 3 waiver rules at the start of every session, computing countdown days and generating exact gap remedies:</p>
+
+                <div style="margin-top: 20px;">
+                    <div class="rule-pill">
+                        <strong>Rule 1 (Combined Balance):</strong> Maintain total balance &ge; <strong>$25,000.00</strong> across checking, savings, MMA, CDs, and investment accounts.
+                    </div>
+                    <div class="rule-pill">
+                        <strong>Rule 2 (Mortgage Auto-Pay):</strong> Have a KeyBank mortgage with automatic payment deductions &ge; <strong>$500.00</strong> from Key Privilege Checking each cycle.
+                    </div>
+                    <div class="rule-pill">
+                        <strong>Rule 3 (Key@Work Direct Deposits):</strong> Be a Key@Work member with direct deposits totaling &ge; <strong>$2,500.00</strong> during each cycle.
+                    </div>
+                </div>
+
+                <div class="feature-box" style="margin-top: 20px; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3);">
+                    <div class="feature-title" style="color: var(--warning);"><i class="fa-solid fa-bullhorn"></i> In-Menu Proactive Announcement:</div>
+                    <p style="font-style: italic; color: #fde68a;">
+                        "Important Privilege Reminder: 5 days remaining in your statement cycle! Add $3,550 in combined balance or verify your Key@Work direct deposits to avoid the $25.00 service charge."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 4: Telephony & Business Impact -->
+        <section class="slide">
+            <div class="slide-tag">Slide 4 • Telephony Routing & Business Impact</div>
+            <h2 class="slide-title">Priority Escalation & Quantifiable Business ROI</h2>
+            <div class="slide-body">
+                <div class="grid-3">
+                    <div class="feature-box" style="text-align: center;">
+                        <div class="stat-number">85%</div>
+                        <div class="stat-label">Reduction in Monthly Fee Inquiries & Disputes</div>
+                    </div>
+                    <div class="feature-box" style="text-align: center;">
+                        <div class="stat-number">42s</div>
+                        <div class="stat-label">AHT Saved per Escalation via Warm Attached KVPs</div>
+                    </div>
+                    <div class="feature-box" style="text-align: center;">
+                        <div class="stat-number">&lt; 20s</div>
+                        <div class="stat-label">Average Wait Time for Dedicated VIP Handover</div>
+                    </div>
+                </div>
+
+                <div class="grid-2" style="margin-top: 24px;">
+                    <div class="feature-box">
+                        <div class="feature-title"><i class="fa-solid fa-network-wired" style="color: var(--warning);"></i> Telephony Route Codes (TRC)</div>
+                        <div class="feature-desc">
+                            • <code>KEY_PRIVATE_CLIENT_TRC</code> &bull; Ultra-HNW Wealth Concierge<br>
+                            • <code>KEYPRIVCCA</code> &bull; Key Privilege Priority Relationship Queue<br>
+                            • <code>MMCCA_SPANISH</code> &bull; Bilingual Spanish VIP (EDW 20-char safe)
+                        </div>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-title"><i class="fa-solid fa-database" style="color: var(--warning);"></i> Genesys Attached Data KVPs</div>
+                        <div class="feature-desc">
+                            Passes <code>CustomerIPI</code>, <code>RelationshipGroup</code>, <code>MaintenanceFeeAtRisk</code>, <code>TotalCombinedBalance</code>, and <code>masterBotId="privilegeConcierge"</code> directly to the agent's desktop.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        KeyBank Key Privilege Multi-Agent System &bull; Team Innovators (Team 53) &bull; October 2026 Hackathon
+    </footer>
+</body>
+</html>

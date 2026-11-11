@@ -3,281 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KeyBank Key Privilege | Voice & Chat Multi-Agent Bot</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>KeyBank Key Privilege | Private Client AI Concierge</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <!-- Top Navigation Header -->
-    <header class="app-header">
-        <div class="header-brand">
-            <div class="bank-logo">
+<body class="luxury-dark">
+    <!-- Top Glass Navigation Bar -->
+    <header class="glass-navbar">
+        <div class="nav-left">
+            <div class="brand-emblem">
                 <i class="fa-solid fa-key"></i>
+                <div class="emblem-glow"></div>
             </div>
-            <div>
-                <div class="brand-title">KeyBank <span class="badge-privilege">Key Privilege Concierge</span></div>
-                <div class="brand-subtitle">Team Innovators • Hackathon Team 53 • Agentic Multi-Agent System</div>
+            <div class="brand-text">
+                <div class="brand-header">
+                    <span class="brand-title">KeyBank</span>
+                    <span class="badge-vip-pill"><i class="fa-solid fa-crown"></i> Key Privilege Concierge</span>
+                </div>
+                <div class="brand-sub">Team Innovators • Hackathon Team 53 • Agentic Multi-Agent System</div>
             </div>
         </div>
 
-        <div class="header-actions">
-            <div class="scenario-selector-container">
-                <label for="customerSelect"><i class="fa-solid fa-user-shield"></i> Demo Scenario:</label>
-                <select id="customerSelect" class="form-select">
+        <div class="nav-center">
+            <!-- Voice Audio Waveform Animation -->
+            <div id="voiceWaveform" class="voice-waveform idle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+            <span id="voiceStatusLabel" class="voice-status-text">Voice Concierge Active</span>
+        </div>
+
+        <div class="nav-right">
+            <!-- Scenario Selector -->
+            <div class="persona-switch">
+                <i class="fa-solid fa-user-astronaut"></i>
+                <select id="customerSelect" class="select-persona">
                     <!-- Populated dynamically -->
                 </select>
             </div>
 
-            <div class="lang-toggle-container">
-                <button id="langToggleBtn" class="btn-lang" title="Toggle Language (English / Español)">
-                    <i class="fa-solid fa-globe"></i> <span id="currentLangLabel">ENG</span>
-                </button>
-            </div>
+            <!-- Language Switcher Button -->
+            <button id="langToggleBtn" class="glass-btn btn-lang" title="Toggle Language (English / Español)">
+                <i class="fa-solid fa-globe"></i> <span id="currentLangLabel">ENG</span>
+            </button>
 
-            <div class="telephony-status">
-                <span class="status-dot online"></span>
-                <span>GVP Telephony: Online</span>
+            <!-- Pitch Deck Link -->
+            <a href="presentation.html" target="_blank" class="glass-btn btn-deck" title="Open Hackathon Pitch Deck">
+                <i class="fa-solid fa-trophy"></i> Pitch Deck
+            </a>
+
+            <!-- Telephony Live Badge -->
+            <div class="telephony-live-pill">
+                <span class="pulse-dot"></span>
+                <span>GVP Telephony Online</span>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="main-layout">
-        <!-- Left Sidebar: Customer Context & Fee Avoidance Engine -->
-        <aside class="sidebar-panel">
-            <!-- Profile Card -->
-            <div class="card profile-card">
-                <div class="card-header">
-                    <h3><i class="fa-solid fa-id-card-clip"></i> Privileged Client Profile</h3>
-                    <span id="tierBadge" class="tier-pill">PRIVILEGED</span>
+    <!-- App Layout -->
+    <div class="app-container">
+        <!-- Left Sidebar: Wealth Profile & Fee Avoidance Engine -->
+        <aside class="sidebar-lux">
+            <!-- Client Identity Card -->
+            <div class="lux-card profile-lux">
+                <div class="card-glow"></div>
+                <div class="profile-header">
+                    <div class="avatar-ring">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div class="profile-meta">
+                        <div id="profName" class="client-name">Eleanor Vance</div>
+                        <div class="client-id"><span id="profIpi">031379551</span> • <span id="profPhone">(385) 456-9511</span></div>
+                    </div>
+                    <span id="tierBadge" class="tier-pill-lux">PRIVILEGED</span>
                 </div>
-                <div class="card-body">
-                    <div class="profile-row">
-                        <span class="label">Customer Name:</span>
-                        <span id="profName" class="val-highlight">Eleanor Vance</span>
-                    </div>
-                    <div class="profile-row">
-                        <span class="label">Customer IPI:</span>
-                        <span id="profIpi" class="val-mono">031379551</span>
-                    </div>
-                    <div class="profile-row">
-                        <span class="label">Phone / ANI:</span>
-                        <span id="profPhone" class="val-mono">(385) 456-9511</span>
-                    </div>
-                    <div class="profile-row">
-                        <span class="label">Relationship Group:</span>
-                        <span id="profGroup" class="group-badge">Group D (Primacy Eligible)</span>
-                    </div>
-                    <div class="profile-row">
-                        <span class="label">Key@Work Member:</span>
-                        <span id="profKeyAtWork" class="val-tag">YES</span>
-                    </div>
+                <div class="profile-badges">
+                    <div class="p-badge"><i class="fa-solid fa-gem"></i> <span id="profGroup">Group D (Primacy)</span></div>
+                    <div class="p-badge"><i class="fa-solid fa-building-user"></i> Key@Work: <strong id="profKeyAtWork">YES</strong></div>
                 </div>
             </div>
 
-            <!-- Maintenance Fee Avoidance Tracker -->
-            <div class="card fee-card">
-                <div class="card-header fee-header">
-                    <h3><i class="fa-solid fa-shield-halved"></i> Fee Avoidance Tracker</h3>
-                    <span id="feeWaiverBadge" class="badge-at-risk">AT RISK ($25 FEE)</span>
+            <!-- Fee Avoidance Shield & Live Rules Widget -->
+            <div class="lux-card fee-guard-lux" id="feeGuardCard">
+                <div class="fee-header">
+                    <div class="fee-title-group">
+                        <div class="shield-icon" id="shieldIconContainer">
+                            <i id="shieldIcon" class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <div>
+                            <h4>Fee Avoidance Guard</h4>
+                            <div class="fee-subtitle">$25.00/Mo Checking Waiver Rules</div>
+                        </div>
+                    </div>
+                    <div id="feeWaiverBadge" class="status-pill at-risk">AT RISK ($25 FEE)</div>
                 </div>
-                <div class="card-body">
-                    <div class="fee-explainer">
-                        <strong>How to Avoid the $25.00 Maintenance Fee:</strong><br>
-                        <em>Meet any ONE of the following 3 criteria before cycle cutoff:</em>
-                    </div>
 
+                <!-- Rules Accordion/Cards -->
+                <div class="rules-container">
                     <!-- Rule 1: $25k Combined Balance -->
-                    <div class="rule-box" id="rule1Box">
-                        <div class="rule-title">
-                            <span id="rule1Icon" class="rule-status-icon fail"><i class="fa-solid fa-circle-xmark"></i></span>
-                            <span><strong>Rule 1:</strong> Total Balance &ge; $25,000</span>
+                    <div class="lux-rule" id="rule1Box">
+                        <div class="rule-top">
+                            <div class="rule-info">
+                                <span id="rule1Icon" class="check-icon fail"><i class="fa-solid fa-circle-xmark"></i></span>
+                                <span class="rule-name">1. Combined Balance &ge; $25,000</span>
+                            </div>
+                            <span id="rule1Current" class="rule-val">$21,450.00</span>
                         </div>
-                        <div class="rule-metric">
-                            <span id="rule1Current">$21,450.00</span> / $25,000.00
-                        </div>
-                        <div class="progress-bar-bg">
-                            <div id="rule1Progress" class="progress-fill warning" style="width: 85%;"></div>
+                        <div class="meter-bar">
+                            <div id="rule1Progress" class="meter-fill warning" style="width: 85%;"></div>
                         </div>
                     </div>
 
-                    <!-- Rule 2: $500 Mortgage Auto-Deduction -->
-                    <div class="rule-box" id="rule2Box">
-                        <div class="rule-title">
-                            <span id="rule2Icon" class="rule-status-icon fail"><i class="fa-solid fa-circle-xmark"></i></span>
-                            <span><strong>Rule 2:</strong> Mortgage Auto-Pay &ge; $500</span>
+                    <!-- Rule 2: $500 Mortgage Auto-Pay -->
+                    <div class="lux-rule" id="rule2Box">
+                        <div class="rule-top">
+                            <div class="rule-info">
+                                <span id="rule2Icon" class="check-icon fail"><i class="fa-solid fa-circle-xmark"></i></span>
+                                <span class="rule-name">2. Mortgage Auto-Pay &ge; $500</span>
+                            </div>
+                            <span id="rule2Current" class="rule-val">$0.00 / mo</span>
                         </div>
-                        <div class="rule-metric">
-                            <span id="rule2Current">$0.00 / mo</span> (Target: &ge; $500)
-                        </div>
-                        <div class="progress-bar-bg">
-                            <div id="rule2Progress" class="progress-fill fail" style="width: 0%;"></div>
+                        <div class="meter-bar">
+                            <div id="rule2Progress" class="meter-fill fail" style="width: 0%;"></div>
                         </div>
                     </div>
 
                     <!-- Rule 3: $2,500 Key@Work Direct Deposits -->
-                    <div class="rule-box" id="rule3Box">
-                        <div class="rule-title">
-                            <span id="rule3Icon" class="rule-status-icon fail"><i class="fa-solid fa-circle-xmark"></i></span>
-                            <span><strong>Rule 3:</strong> Key@Work Deposits &ge; $2,500</span>
+                    <div class="lux-rule" id="rule3Box">
+                        <div class="rule-top">
+                            <div class="rule-info">
+                                <span id="rule3Icon" class="check-icon fail"><i class="fa-solid fa-circle-xmark"></i></span>
+                                <span class="rule-name">3. Key@Work Deposits &ge; $2,500</span>
+                            </div>
+                            <span id="rule3Current" class="rule-val">$1,200.00</span>
                         </div>
-                        <div class="rule-metric">
-                            <span id="rule3Current">$1,200.00</span> / $2,500.00
-                        </div>
-                        <div class="progress-bar-bg">
-                            <div id="rule3Progress" class="progress-fill warning" style="width: 48%;"></div>
+                        <div class="meter-bar">
+                            <div id="rule3Progress" class="meter-fill warning" style="width: 48%;"></div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Cycle Countdown & Proactive Remedy -->
-                    <div id="remedyBox" class="remedy-alert">
-                        <div class="remedy-header"><i class="fa-solid fa-triangle-exclamation"></i> <span id="daysRemainingText">5 Days Remaining in Statement Cycle</span></div>
-                        <div id="remedyText" class="remedy-content">Add $3,550.00 in combined balance or verify direct deposits to avoid the $25 monthly charge.</div>
+                <!-- Proactive Remedy Alert Box -->
+                <div id="remedyBox" class="remedy-lux">
+                    <div class="remedy-headline">
+                        <i class="fa-solid fa-stopwatch"></i>
+                        <span id="daysRemainingText">5 Days Remaining in Statement Cycle</span>
                     </div>
+                    <div id="remedyText" class="remedy-body">
+                        Add $3,550.00 in combined balance or verify your direct deposits to avoid the $25 monthly maintenance fee.
+                    </div>
+                    <button class="btn-remedy-action" onclick="document.getElementById('userInput').value='Avoid maintenance fee'; handleSendMessage();">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Fix Fee Gap Now
+                    </button>
                 </div>
             </div>
 
-            <!-- Telephony & Routing Context Inspector -->
-            <div class="card routing-card">
-                <div class="card-header">
-                    <h3><i class="fa-solid fa-network-wired"></i> Telephony & KVP Inspector</h3>
-                    <span id="activeTrcBadge" class="trc-pill">GENESYS</span>
+            <!-- Telephony Context Inspector -->
+            <div class="lux-card telephony-lux">
+                <div class="telephony-head">
+                    <div class="t-title"><i class="fa-solid fa-satellite-dish"></i> GVP / Genesys Telephony</div>
+                    <span id="activeTrcBadge" class="trc-badge-lux">GENESYS</span>
                 </div>
-                <div class="card-body">
-                    <div class="routing-row">
-                        <span class="label">Target Queue:</span>
-                        <span id="inspectQueue" class="val-mono">Key Privilege Priority Desk</span>
-                    </div>
-                    <div class="routing-row">
-                        <span class="label">MasterBot ID:</span>
-                        <span id="inspectBotId" class="val-mono">privilegeConcierge</span>
-                    </div>
-                    <div class="routing-row">
-                        <span class="label">Active Sub-Agent:</span>
-                        <span id="inspectSubagent" class="val-highlight">root_agent</span>
-                    </div>
-                    <div class="routing-row">
-                        <span class="label">Audio Prompt:</span>
-                        <span id="inspectPrompt" class="prompt-badge">[K2U_ENG.700.au]</span>
-                    </div>
-                    <div class="kvp-section">
-                        <div class="kvp-label">Genesys Attached Data KVPs:</div>
-                        <pre id="inspectKvps" class="kvp-json">{}</pre>
+                <div class="telephony-body">
+                    <div class="t-row"><span class="k">Queue:</span> <span id="inspectQueue" class="v">Key Privilege Priority Desk</span></div>
+                    <div class="t-row"><span class="k">Sub-Agent:</span> <span id="inspectSubagent" class="v highlight">root_agent</span></div>
+                    <div class="t-row"><span class="k">Voice Prompt:</span> <span id="inspectPrompt" class="v mono">[K2U_ENG.700.au]</span></div>
+                    <div class="t-row"><span class="k">MasterBot ID:</span> <span id="inspectBotId" class="v mono">privilegeConcierge</span></div>
+                    <div class="kvp-box">
+                        <div class="kvp-title"><i class="fa-solid fa-code"></i> Attached Data KVPs (Telephony Session)</div>
+                        <pre id="inspectKvps" class="kvp-code">{}</pre>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <!-- Center: Interactive Voice & Chat Simulator -->
-        <section class="chat-panel">
-            <!-- Chat Header -->
-            <div class="chat-header">
-                <div class="chat-agent-info">
-                    <div class="agent-avatar"><i class="fa-solid fa-headset"></i></div>
+        <!-- Main Conversational Interface -->
+        <main class="chat-viewport">
+            <!-- Header Bar inside Chat -->
+            <div class="chat-topbar">
+                <div class="agent-profile">
+                    <div class="agent-icon-halo">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
                     <div>
-                        <div id="agentTitle" class="agent-title">Key Privilege Root Supervisor</div>
-                        <div id="agentStatusSubtitle" class="agent-subtitle">Multi-Agent Orchestrator • Ready for Voice & Text</div>
+                        <div id="agentTitle" class="agent-name">Key Privilege Root Supervisor</div>
+                        <div class="agent-role"><span class="online-indicator"></span> Multi-Agent Orchestrator • Voice, DTMF & Text Ready</div>
                     </div>
                 </div>
-                <div class="voice-controls">
-                    <button id="speechToggleBtn" class="btn-icon" title="Toggle Auto Text-to-Speech">
+
+                <div class="topbar-actions">
+                    <button id="speechToggleBtn" class="action-round-btn active" title="Toggle Auto Text-to-Speech">
                         <i id="ttsIcon" class="fa-solid fa-volume-high"></i>
                     </button>
-                    <button id="micBtn" class="btn-mic" title="Speak via Microphone (Speech-to-Text)">
+                    <button id="micBtn" class="mic-glow-btn" title="Speak via Microphone (Speech-to-Text)">
                         <i class="fa-solid fa-microphone"></i>
                     </button>
-                    <button id="toggleDtmfBtn" class="btn-icon" title="Open Telephone DTMF Keypad">
-                        <i class="fa-solid fa-phone-flip"></i> DTMF
+                    <button id="toggleDtmfBtn" class="dtmf-toggle-btn" title="Open Telephone DTMF Keypad">
+                        <i class="fa-solid fa-phone-flip"></i> Touch-Tone Dialpad
                     </button>
                 </div>
             </div>
 
-            <!-- Proactive Reminder Notification Banner (When at risk) -->
-            <div id="proactiveAlertBanner" class="proactive-banner hidden">
+            <!-- Proactive Reminder Notification Ribbon -->
+            <div id="proactiveAlertBanner" class="proactive-alert-ribbon hidden">
+                <div class="ribbon-glow"></div>
                 <i class="fa-solid fa-bell"></i>
-                <div id="proactiveAlertContent">Proactive Fee Alert</div>
+                <div id="proactiveAlertContent" class="ribbon-text">Proactive Fee Alert Notice</div>
             </div>
 
-            <!-- Messages Stream -->
-            <div id="messageStream" class="message-stream">
-                <!-- Dynamically populated messages -->
+            <!-- Interactive Message Stream -->
+            <div id="messageStream" class="chat-stream">
+                <!-- Dynamically populated bubbles -->
             </div>
 
-            <!-- Quick Reply Suggestions Bar -->
-            <div id="quickRepliesBar" class="quick-replies-bar">
-                <!-- Quick reply chips -->
+            <!-- Quick Action Suggestion Chips -->
+            <div id="quickRepliesBar" class="chips-container">
+                <!-- Dynamically populated quick replies -->
             </div>
 
-            <!-- Input Bar -->
-            <div class="chat-input-bar">
-                <input type="text" id="userInput" class="chat-input" placeholder="Type a message (e.g. 'Credit card statement', 'Balance inquiry', 'Avoid fee', or press 1-7)..." autocomplete="off">
-                <button id="sendBtn" class="btn-send"><i class="fa-solid fa-paper-plane"></i></button>
+            <!-- Modern Floating Glass Input Bar -->
+            <div class="chat-input-wrapper">
+                <div class="glass-input-pill">
+                    <i class="fa-solid fa-comment-dots input-icon"></i>
+                    <input type="text" id="userInput" class="modern-input" placeholder="Ask Key Privilege Concierge (e.g. 'Credit card statement', 'Balance inquiry', 'Avoid fee', or press 1-7)..." autocomplete="off">
+                    <button id="sendBtn" class="send-glow-btn" title="Send message">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </div>
             </div>
-        </section>
+        </main>
 
-        <!-- Right / Floating: Traditional DTMF Keypad Panel -->
-        <aside id="dtmfPanel" class="dtmf-panel">
-            <div class="dtmf-header">
-                <h4><i class="fa-solid fa-calculator"></i> Touch-Tone Keypad</h4>
-                <button id="closeDtmfBtn" class="btn-close-dtmf"><i class="fa-solid fa-xmark"></i></button>
+        <!-- Floating Glass DTMF Touch-Tone Dialpad Panel -->
+        <aside id="dtmfPanel" class="dtmf-floating-panel collapsed">
+            <div class="dtmf-panel-header">
+                <div class="dtmf-title"><i class="fa-solid fa-keyboard"></i> Touch-Tone Keypad</div>
+                <button id="closeDtmfBtn" class="close-dtmf-btn"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="dtmf-display" id="dtmfDisplay">Press key or speak</div>
-            <div class="dtmf-grid">
-                <button class="dtmf-btn" data-key="1">
-                    <span class="digit">1</span>
-                    <span class="subtext">Balance</span>
-                </button>
-                <button class="dtmf-btn" data-key="2">
-                    <span class="digit">2</span>
-                    <span class="subtext">CC Stmt</span>
-                </button>
-                <button class="dtmf-btn" data-key="3">
-                    <span class="digit">3</span>
-                    <span class="subtext">Offers</span>
-                </button>
-                <button class="dtmf-btn" data-key="4">
-                    <span class="digit">4</span>
-                    <span class="subtext">History</span>
-                </button>
-                <button class="dtmf-btn" data-key="5">
-                    <span class="digit">5</span>
-                    <span class="subtext">Fee / Due</span>
-                </button>
-                <button class="dtmf-btn" data-key="6">
-                    <span class="digit">6</span>
-                    <span class="subtext">Concierge</span>
-                </button>
-                <button class="dtmf-btn" data-key="7">
-                    <span class="digit">7</span>
-                    <span class="subtext">Language</span>
-                </button>
-                <button class="dtmf-btn" data-key="8">
-                    <span class="digit">8</span>
-                    <span class="subtext">TUV</span>
-                </button>
-                <button class="dtmf-btn" data-key="9">
-                    <span class="digit">9</span>
-                    <span class="subtext">WXYZ</span>
-                </button>
-                <button class="dtmf-btn" data-key="*">
-                    <span class="digit">*</span>
-                    <span class="subtext">Menu</span>
-                </button>
-                <button class="dtmf-btn" data-key="0">
-                    <span class="digit">0</span>
-                    <span class="subtext">Operator</span>
-                </button>
-                <button class="dtmf-btn" data-key="#">
-                    <span class="digit">#</span>
-                    <span class="subtext">Enter</span>
-                </button>
+            <div id="dtmfDisplay" class="dtmf-readout">Press dialpad key</div>
+            <div class="dialpad-grid">
+                <button class="key-btn" data-key="1"><span class="k-num">1</span><span class="k-sub">Balance</span></button>
+                <button class="key-btn" data-key="2"><span class="k-num">2</span><span class="k-sub">CC Stmt</span></button>
+                <button class="key-btn" data-key="3"><span class="k-num">3</span><span class="k-sub">Offers</span></button>
+                <button class="key-btn" data-key="4"><span class="k-num">4</span><span class="k-sub">History</span></button>
+                <button class="key-btn" data-key="5"><span class="k-num">5</span><span class="k-sub">Fee / Due</span></button>
+                <button class="key-btn" data-key="6"><span class="k-num">6</span><span class="k-sub">Concierge</span></button>
+                <button class="key-btn" data-key="7"><span class="k-num">7</span><span class="k-sub">Language</span></button>
+                <button class="key-btn" data-key="8"><span class="k-num">8</span><span class="k-sub">TUV</span></button>
+                <button class="key-btn" data-key="9"><span class="k-num">9</span><span class="k-sub">WXYZ</span></button>
+                <button class="key-btn" data-key="*"><span class="k-num">*</span><span class="k-sub">Menu</span></button>
+                <button class="key-btn" data-key="0"><span class="k-num">0</span><span class="k-sub">Operator</span></button>
+                <button class="key-btn" data-key="#"><span class="k-num">#</span><span class="k-sub">Enter</span></button>
             </div>
-            <div class="dtmf-footer">
-                Generates authentic dual-tone multi-frequency IVR audio
+            <div class="dialpad-footer">
+                <i class="fa-solid fa-wave-square"></i> Web Audio API Dual-Tone Multi-Frequency (DTMF)
             </div>
         </aside>
-    </main>
+    </div>
 
+    <script src="agent_engine.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

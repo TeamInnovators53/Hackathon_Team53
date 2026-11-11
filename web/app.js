@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const quickRepliesBar = document.getElementById("quickRepliesBar");
     const proactiveAlertBanner = document.getElementById("proactiveAlertBanner");
     const proactiveAlertContent = document.getElementById("proactiveAlertContent");
+    const voiceWaveform = document.getElementById("voiceWaveform");
+    const voiceStatusLabel = document.getElementById("voiceStatusLabel");
 
     // Profile DOM
     const profName = document.getElementById("profName");
@@ -118,6 +120,11 @@ document.addEventListener("DOMContentLoaded", () => {
         recognition.onstart = () => {
             isRecording = true;
             micBtn.classList.add("recording");
+            if (voiceWaveform) {
+                voiceWaveform.classList.remove("idle", "speaking");
+                voiceWaveform.classList.add("recording");
+            }
+            if (voiceStatusLabel) voiceStatusLabel.textContent = "Listening to caller...";
         };
 
         recognition.onresult = (event) => {
@@ -129,11 +136,21 @@ document.addEventListener("DOMContentLoaded", () => {
         recognition.onerror = () => {
             isRecording = false;
             micBtn.classList.remove("recording");
+            if (voiceWaveform) {
+                voiceWaveform.classList.remove("recording");
+                voiceWaveform.classList.add("idle");
+            }
+            if (voiceStatusLabel) voiceStatusLabel.textContent = "Voice Concierge Active";
         };
 
         recognition.onend = () => {
             isRecording = false;
             micBtn.classList.remove("recording");
+            if (voiceWaveform) {
+                voiceWaveform.classList.remove("recording");
+                voiceWaveform.classList.add("idle");
+            }
+            if (voiceStatusLabel) voiceStatusLabel.textContent = "Voice Concierge Active";
         };
     } else {
         micBtn.style.display = "none";
@@ -143,8 +160,34 @@ document.addEventListener("DOMContentLoaded", () => {
     function speakText(text) {
         if (!isTtsEnabled || !window.speechSynthesis) return;
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
+        const cleanText = text ? text.replace(/[#*`_>]/g, "").trim() : "";
+        const utterance = new SpeechSynthesisUtterance(cleanText);
         utterance.rate = 1.05;
+
+        utterance.onstart = () => {
+            if (voiceWaveform) {
+                voiceWaveform.classList.remove("idle", "recording");
+                voiceWaveform.classList.add("speaking");
+            }
+            if (voiceStatusLabel) voiceStatusLabel.textContent = "Voice Concierge Speaking...";
+        };
+
+        utterance.onend = () => {
+            if (voiceWaveform) {
+                voiceWaveform.classList.remove("speaking");
+                voiceWaveform.classList.add("idle");
+            }
+            if (voiceStatusLabel) voiceStatusLabel.textContent = "Voice Concierge Active";
+        };
+
+        utterance.onerror = () => {
+            if (voiceWaveform) {
+                voiceWaveform.classList.remove("speaking");
+                voiceWaveform.classList.add("idle");
+            }
+            if (voiceStatusLabel) voiceStatusLabel.textContent = "Voice Concierge Active";
+        };
+
         window.speechSynthesis.speak(utterance);
     }
 
@@ -161,10 +204,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return html;
     }
 
-    // Fetch Customers List
+    // Fetch Customers List (with automatic fallback to ClientAgentEngine on Firebase Hosting)
     async function loadCustomers() {
         try {
             const res = await fetch("/api/customers");
+            if (!res.ok) throw new Error("API not available");
             const data = await res.json();
             customerSelect.innerHTML = "";
 
@@ -182,15 +226,32 @@ document.addEventListener("DOMContentLoaded", () => {
             activeCustomerIpi = data.active_ipi;
             await initSession(activeCustomerIpi);
         } catch (e) {
-            console.error("Failed to load customers:", e);
+            console.log("Using ClientAgentEngine for static hosting:", e);
+            const customers = window.ClientAgentEngine.getCustomers();
+            customerSelect.innerHTML = "";
+            customers.forEach((c, idx) => {
+                const opt = document.createElement("option");
+                opt.value = c.ipi;
+                opt.textContent = `${c.name} (${c.tier} - Group ${c.relationship_group})`;
+                if (idx === 0) opt.selected = true;
+                customerSelect.appendChild(opt);
+            });
+            activeCustomerIpi = customers[0].ipi;
+            await initSession(activeCustomerIpi);
         }
     }
 
     // Fetch Profile & Update Sidebar
     async function updateProfileUI() {
         try {
-            const res = await fetch("/api/profile");
-            const p = await res.json();
+            let p;
+            try {
+                const res = await fetch("/api/profile");
+                if (!res.ok) throw new Error("API offline");
+                p = await res.json();
+            } catch (err) {
+                p = window.ClientAgentEngine.getActiveProfile();
+            }
 
             profName.textContent = p.name;
             profIpi.textContent = p.ipi;
@@ -246,12 +307,19 @@ document.addEventListener("DOMContentLoaded", () => {
     async function initSession(ipi) {
         messageStream.innerHTML = "";
         try {
-            const res = await fetch("/api/session/init", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({customer_ipi: ipi})
-            });
-            const data = await res.json();
+            let data;
+            try {
+                const res = await fetch("/api/session/init", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({customer_ipi: ipi})
+                });
+                if (!res.ok) throw new Error("API offline");
+                data = await res.json();
+            } catch (err) {
+                window.ClientAgentEngine.setActiveIpi(ipi);
+                data = window.ClientAgentEngine.initializeSession(ipi);
+            }
             renderAgentResponse(data);
             await updateProfileUI();
         } catch (e) {
@@ -344,12 +412,18 @@ document.addEventListener("DOMContentLoaded", () => {
         userInput.value = "";
 
         try {
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({message: text})
-            });
-            const data = await res.json();
+            let data;
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({message: text})
+                });
+                if (!res.ok) throw new Error("API offline");
+                data = await res.json();
+            } catch (err) {
+                data = window.ClientAgentEngine.routeAndExecute(text);
+            }
             renderAgentResponse(data);
             await updateProfileUI();
         } catch (e) {
@@ -413,7 +487,7 @@ document.addEventListener("DOMContentLoaded", () => {
         dtmfPanel.classList.add("collapsed");
     });
 
-    document.querySelectorAll(".dtmf-btn").forEach(btn => {
+    document.querySelectorAll(".key-btn, .dtmf-btn").forEach(btn => {
         btn.addEventListener("click", () => {
             const key = btn.getAttribute("data-key");
             playDtmfTone(key);
