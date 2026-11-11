@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeyBank Key Privilege | Voice & Chat Multi-Agent Bot</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="bank-logo">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <div>
+                <div class="brand-title">KeyBank <span class="badge-privilege">Key Privilege Concierge</span></div>
+                <div class="brand-subtitle">Team Innovators • Hackathon Team 53 • Agentic Multi-Agent System</div>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <div class="scenario-selector-container">
+                <label for="customerSelect"><i class="fa-solid fa-user-shield"></i> Demo Scenario:</label>
+                <select id="customerSelect" class="form-select">
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+
+            <div class="lang-toggle-container">
+                <button id="langToggleBtn" class="btn-lang" title="Toggle Language (English / Español)">
+                    <i class="fa-solid fa-globe"></i> <span id="currentLangLabel">ENG</span>
+                </button>
+            </div>
+
+            <div class="telephony-status">
+                <span class="status-dot online"></span>
+                <span>GVP Telephony: Online</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-layout">
+        <!-- Left Sidebar: Customer Context & Fee Avoidance Engine -->
+        <aside class="sidebar-panel">
+            <!-- Profile Card -->
+            <div class="card profile-card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-id-card-clip"></i> Privileged Client Profile</h3>
+                    <span id="tierBadge" class="tier-pill">PRIVILEGED</span>
+                </div>
+                <div class="card-body">
+                    <div class="profile-row">
+                        <span class="label">Customer Name:</span>
+                        <span id="profName" class="val-highlight">Eleanor Vance</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="label">Customer IPI:</span>
+                        <span id="profIpi" class="val-mono">031379551</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="label">Phone / ANI:</span>
+                        <span id="profPhone" class="val-mono">(385) 456-9511</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="label">Relationship Group:</span>
+                        <span id="profGroup" class="group-badge">Group D (Primacy Eligible)</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="label">Key@Work Member:</span>
+                        <span id="profKeyAtWork" class="val-tag">YES</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance Fee Avoidance Tracker -->
+            <div class="card fee-card">
+                <div class="card-header fee-header">
+                    <h3><i class="fa-solid fa-shield-halved"></i> Fee Avoidance Tracker</h3>
+                    <span id="feeWaiverBadge" class="badge-at-risk">AT RISK ($25 FEE)</span>
+                </div>
+                <div class="card-body">
+                    <div class="fee-explainer">
+                        <strong>How to Avoid the $25.00 Maintenance Fee:</strong><br>
+                        <em>Meet any ONE of the following 3 criteria before cycle cutoff:</em>
+                    </div>
+
+                    <!-- Rule 1: $25k Combined Balance -->
+                    <div class="rule-box" id="rule1Box">
+                        <div class="rule-title">
+                            <span id="rule1Icon" class="rule-status-icon fail"><i class="fa-solid fa-circle-xmark"></i></span>
+                            <span><strong>Rule 1:</strong> Total Balance &ge; $25,000</span>
+                        </div>
+                        <div class="rule-metric">
+                            <span id="rule1Current">$21,450.00</span> / $25,000.00
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="rule1Progress" class="progress-fill warning" style="width: 85%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Rule 2: $500 Mortgage Auto-Deduction -->
+                    <div class="rule-box" id="rule2Box">
+                        <div class="rule-title">
+                            <span id="rule2Icon" class="rule-status-icon fail"><i class="fa-solid fa-circle-xmark"></i></span>
+                            <span><strong>Rule 2:</strong> Mortgage Auto-Pay &ge; $500</span>
+                        </div>
+                        <div class="rule-metric">
+                            <span id="rule2Current">$0.00 / mo</span> (Target: &ge; $500)
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="rule2Progress" class="progress-fill fail" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Rule 3: $2,500 Key@Work Direct Deposits -->
+                    <div class="rule-box" id="rule3Box">
+                        <div class="rule-title">
+                            <span id="rule3Icon" class="rule-status-icon fail"><i class="fa-solid fa-circle-xmark"></i></span>
+                            <span><strong>Rule 3:</strong> Key@Work Deposits &ge; $2,500</span>
+                        </div>
+                        <div class="rule-metric">
+                            <span id="rule3Current">$1,200.00</span> / $2,500.00
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="rule3Progress" class="progress-fill warning" style="width: 48%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Cycle Countdown & Proactive Remedy -->
+                    <div id="remedyBox" class="remedy-alert">
+                        <div class="remedy-header"><i class="fa-solid fa-triangle-exclamation"></i> <span id="daysRemainingText">5 Days Remaining in Statement Cycle</span></div>
+                        <div id="remedyText" class="remedy-content">Add $3,550.00 in combined balance or verify direct deposits to avoid the $25 monthly charge.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telephony & Routing Context Inspector -->
+            <div class="card routing-card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-network-wired"></i> Telephony & KVP Inspector</h3>
+                    <span id="activeTrcBadge" class="trc-pill">GENESYS</span>
+                </div>
+                <div class="card-body">
+                    <div class="routing-row">
+                        <span class="label">Target Queue:</span>
+                        <span id="inspectQueue" class="val-mono">Key Privilege Priority Desk</span>
+                    </div>
+                    <div class="routing-row">
+                        <span class="label">MasterBot ID:</span>
+                        <span id="inspectBotId" class="val-mono">privilegeConcierge</span>
+                    </div>
+                    <div class="routing-row">
+                        <span class="label">Active Sub-Agent:</span>
+                        <span id="inspectSubagent" class="val-highlight">root_agent</span>
+                    </div>
+                    <div class="routing-row">
+                        <span class="label">Audio Prompt:</span>
+                        <span id="inspectPrompt" class="prompt-badge">[K2U_ENG.700.au]</span>
+                    </div>
+                    <div class="kvp-section">
+                        <div class="kvp-label">Genesys Attached Data KVPs:</div>
+                        <pre id="inspectKvps" class="kvp-json">{}</pre>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: Interactive Voice & Chat Simulator -->
+        <section class="chat-panel">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-agent-info">
+                    <div class="agent-avatar"><i class="fa-solid fa-headset"></i></div>
+                    <div>
+                        <div id="agentTitle" class="agent-title">Key Privilege Root Supervisor</div>
+                        <div id="agentStatusSubtitle" class="agent-subtitle">Multi-Agent Orchestrator • Ready for Voice & Text</div>
+                    </div>
+                </div>
+                <div class="voice-controls">
+                    <button id="speechToggleBtn" class="btn-icon" title="Toggle Auto Text-to-Speech">
+                        <i id="ttsIcon" class="fa-solid fa-volume-high"></i>
+                    </button>
+                    <button id="micBtn" class="btn-mic" title="Speak via Microphone (Speech-to-Text)">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <button id="toggleDtmfBtn" class="btn-icon" title="Open Telephone DTMF Keypad">
+                        <i class="fa-solid fa-phone-flip"></i> DTMF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Proactive Reminder Notification Banner (When at risk) -->
+            <div id="proactiveAlertBanner" class="proactive-banner hidden">
+                <i class="fa-solid fa-bell"></i>
+                <div id="proactiveAlertContent">Proactive Fee Alert</div>
+            </div>
+
+            <!-- Messages Stream -->
+            <div id="messageStream" class="message-stream">
+                <!-- Dynamically populated messages -->
+            </div>
+
+            <!-- Quick Reply Suggestions Bar -->
+            <div id="quickRepliesBar" class="quick-replies-bar">
+                <!-- Quick reply chips -->
+            </div>
+
+            <!-- Input Bar -->
+            <div class="chat-input-bar">
+                <input type="text" id="userInput" class="chat-input" placeholder="Type a message (e.g. 'Credit card statement', 'Balance inquiry', 'Avoid fee', or press 1-7)..." autocomplete="off">
+                <button id="sendBtn" class="btn-send"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </section>
+
+        <!-- Right / Floating: Traditional DTMF Keypad Panel -->
+        <aside id="dtmfPanel" class="dtmf-panel">
+            <div class="dtmf-header">
+                <h4><i class="fa-solid fa-calculator"></i> Touch-Tone Keypad</h4>
+                <button id="closeDtmfBtn" class="btn-close-dtmf"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="dtmf-display" id="dtmfDisplay">Press key or speak</div>
+            <div class="dtmf-grid">
+                <button class="dtmf-btn" data-key="1">
+                    <span class="digit">1</span>
+                    <span class="subtext">Balance</span>
+                </button>
+                <button class="dtmf-btn" data-key="2">
+                    <span class="digit">2</span>
+                    <span class="subtext">CC Stmt</span>
+                </button>
+                <button class="dtmf-btn" data-key="3">
+                    <span class="digit">3</span>
+                    <span class="subtext">Offers</span>
+                </button>
+                <button class="dtmf-btn" data-key="4">
+                    <span class="digit">4</span>
+                    <span class="subtext">History</span>
+                </button>
+                <button class="dtmf-btn" data-key="5">
+                    <span class="digit">5</span>
+                    <span class="subtext">Fee / Due</span>
+                </button>
+                <button class="dtmf-btn" data-key="6">
+                    <span class="digit">6</span>
+                    <span class="subtext">Concierge</span>
+                </button>
+                <button class="dtmf-btn" data-key="7">
+                    <span class="digit">7</span>
+                    <span class="subtext">Language</span>
+                </button>
+                <button class="dtmf-btn" data-key="8">
+                    <span class="digit">8</span>
+                    <span class="subtext">TUV</span>
+                </button>
+                <button class="dtmf-btn" data-key="9">
+                    <span class="digit">9</span>
+                    <span class="subtext">WXYZ</span>
+                </button>
+                <button class="dtmf-btn" data-key="*">
+                    <span class="digit">*</span>
+                    <span class="subtext">Menu</span>
+                </button>
+                <button class="dtmf-btn" data-key="0">
+                    <span class="digit">0</span>
+                    <span class="subtext">Operator</span>
+                </button>
+                <button class="dtmf-btn" data-key="#">
+                    <span class="digit">#</span>
+                    <span class="subtext">Enter</span>
+                </button>
+            </div>
+            <div class="dtmf-footer">
+                Generates authentic dual-tone multi-frequency IVR audio
+            </div>
+        </aside>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
